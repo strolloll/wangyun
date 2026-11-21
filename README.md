@@ -8,6 +8,16 @@
 
 设计文档在 [DESIGN.md](DESIGN.md)（本体、时间、视角、模糊两型、契约、25 个实文章节）。这里只讲怎么跑。
 
+## 看一眼
+
+![一帧：分成几群、谁跟谁紧](images/frame.png)
+
+![诊断带：k(t)、违约读数、负荷份额、稳定位数、色相移动，竖线是换群](images/strip.png)
+
+![动画：颜色按成员延续，换群才换色](images/anim.png)
+
+这三张都是程序自己画的——前一张与右侧「原图」走 Pillow 基准渲染，后两张是诊断带和动画命令的输出，没有外部绘图库。
+
 ---
 
 ## 一分钟读懂它
@@ -628,6 +638,7 @@ wy/server.py     本地网页端（stdlib http.server，零新依赖）。
 wy/plugins.py    扩展点：datasource / reading / renderer；自带例子在 plugins_builtin.py。
 wy/web/          页面（index.html / app.js / style.css；原生 canvas，不加载外部资源）。
 dsh-plugin/      DSH 插件（@local/wangyun-tools）：wy_observe / wy_frame 调 python -m wy.core。
+images/          README 里的展示图（程序自己画的）。
 tests/           契约测试，96 条，无 pytest。
 tools/           调参、诊断、自检（check_layout.py / check_color.py / check_docs.py / check_plugin.py / check_package.py）、
                  探针（probe_*.py，当开发记录留）、
@@ -810,3 +821,7 @@ python -m wy drill --n 128 --ticks 3000 --walk-power 2 --frac-mid 1e-3 --top 6
 - 没测过十万 tick 以上数值精度会不会被磨掉。
 - n 再往上（比如 8192）没试过；2048 时中档视角已经有 188 个团，再多就只能靠收视角了。
 - 真图还没读出名堂：相对半径把它从 0.28 抬到 0.34，然后停住（DESIGN §23）。仪器没问题，是「瓶颈」和「语义」不是一回事。
+
+## 许可证
+
+MIT，见 [LICENSE](LICENSE)。拿去用、改、商用都行，保留版权声明即可。
