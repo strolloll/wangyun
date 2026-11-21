@@ -50,14 +50,16 @@ $env:PYTHONIOENCODING = "utf-8"  # Windows 控制台要这一行，否则中文�
 python -m wy run --n 128 --ticks 4000 --seed 7
 ```
 
-**装法二：装成一个命令**（需要 pip / setuptools；装完在任何目录都能跑）
+**装法二：装成一个命令**（需要 pip；装完在任何目录都能跑）
 
 ```powershell
-pip install -e "D:\望云"
+pip install dist\wangyun-4.2.0-py3-none-any.whl   # 仓库里直接带着轮子
+pip install -e "D:\望云"                            # 或者从源码装
 wangyun run --n 128 --ticks 4000 --seed 7
 ```
 
-> 本机自带的 Python 没有 pip / setuptools，所以**装法二没有在本机验证过**；装法一（`python -m wy`）是逐条跑过的。
+> 这两种都在本机验过：轮子是在干净 venv 里装过、`wangyun` 命令、网页资源、`python -m wy.core` 都跑通了；
+> 仓库里的 `dist/` 就是发布件（wheel + sdist），改代码后重新构建：`python -m build`。
 
 **命令**（`python -m wy ...` 与 `wangyun ...` 完全等价）
 
@@ -639,6 +641,7 @@ wy/plugins.py    扩展点：datasource / reading / renderer；自带例子在 p
 wy/web/          页面（index.html / app.js / style.css；原生 canvas，不加载外部资源）。
 dsh-plugin/      DSH 插件（@local/wangyun-tools）：wy_observe / wy_frame 调 python -m wy.core。
 images/          README 里的展示图（程序自己画的）。
+dist/            发布件：wangyun-4.2.0-py3-none-any.whl / .tar.gz（`python -m build` 重出）。
 tests/           契约测试，96 条，无 pytest。
 tools/           调参、诊断、自检（check_layout.py / check_color.py / check_docs.py / check_plugin.py / check_package.py）、
                  探针（probe_*.py，当开发记录留）、

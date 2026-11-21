@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,6 +7,8 @@ name = "wangyun"
 version = "4.2.0"
 description = "望云：看形从关系里长出来的观测器（瓶颈读数器）"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24", "Pillow>=9"]
 
@@ -20,4 +22,3 @@ packages = ["wy", "wy.core"]
 
 [tool.setuptools.package-data]
 wy = ["web/*.html", "web/*.css", "web/*.js"]
-
