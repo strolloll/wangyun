@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wangyun"
+version = "4.2.0"
+description = "望云：看形从关系里长出来的观测器（瓶颈读数器）"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "Pillow>=9"]
+
+[project.scripts]
+wangyun = "wy.cli:main"
+
+# 核心里只有 numpy；Pillow 只服务出图那一层（wy.render / wy.scene / 带子 / 肖像）。
+# 想只拿读数：`from wy.core import observe, Config` 就行，见 ARCHITECTURE.md。
+[tool.setuptools]
+packages = ["wy", "wy.core"]
+
+[tool.setuptools.package-data]
+wy = ["web/*.html", "web/*.css", "web/*.js"]
+

@@ -1,0 +1,28 @@
+{
+  "name": "@local/wangyun-tools",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "description": "把望云的核心读数接进 DSH：一个 wy_observe 工具，跑数据看网络长成什么样。",
+  "icon": "icon.svg",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# ============================================================================
+# wangyun-tools 的 bundle patch：往配置树里加一行，望云的读数就接上了。
+# ============================================================================
+#
+# 这一层只管「用哪个 python、跑哪个仓库」。参数在工具调用时给。
+#   - id 必须全局唯一，且不能和别的插件撞行。
+#   - config 交给 index.js 的 apply(ctx, config)，缺的字段用默认值补齐。
+# ============================================================================
+
+- insert:
+    - id: wangyun-tools
+      name: '@local/wangyun-tools'
+      config:
+        python: 'C:\Users\CS TAO\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe'
+        workspace: 'D:\望云'
+        timeoutMs: 120000

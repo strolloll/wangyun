@@ -1,0 +1,20 @@
+# 运行产物
+out/
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# 本地工具与下载
+_tools/
+*.log
+*.whl
+*.tar.gz
+
+# 系统
+Thumbs.db
+.DS_Store

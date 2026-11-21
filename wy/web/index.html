@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>望云 · 本地观察台</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>望云</h1>
+  <p class="tag">结构先长成参数，颜色按成员记路，读数自己说话。</p>
+</header>
+
+<main>
+  <section class="panel controls">
+    <label>n <input id="n" type="number" min="8" max="2000" value="128"></label>
+    <label>模块 <input id="modules" type="number" min="1" max="24" value="8"></label>
+    <label>ticks <input id="ticks" type="number" min="10" max="20000" value="1200"></label>
+    <label>种子 <input id="seed" type="number" min="0" value="7"></label>
+    <label>采样 <input id="probe" type="number" min="2" max="500" value="20"></label>
+    <label>位数门 <input id="need" type="number" min="1" max="64" value="4"></label>
+    <label>视角 <input id="frac" type="number" step="0.001" min="0.0001" max="0.5" value="0.03"></label>
+    <button id="run">跑一遍</button>
+    <span id="status" role="status"></span>
+  </section>
+
+  <section class="stage">
+    <canvas id="view" width="760" height="620"></canvas>
+    <div class="playbar">
+      <button id="play">播放</button>
+      <input id="scrub" type="range" min="0" value="0" step="1">
+      <span id="frameinfo"></span>
+    </div>
+    <canvas id="band" width="760" height="120"></canvas>
+  </section>
+
+  <aside class="panel side">
+    <h2>事件</h2>
+    <ol id="events"></ol>
+    <h2>扩展点</h2>
+    <ul id="plugins"></ul>
+    <p><a id="svg" href="#" target="_blank" rel="noreferrer">当前帧 → SVG</a>
+       · <a id="png" href="#" target="_blank" rel="noreferrer">原图（Pillow）</a>
+       · <a id="bundle" href="#" download="bundle.json">下载 bundle</a></p>
+    <p class="size"><label>原图尺寸
+      <input id="size" type="range" min="320" max="1100" step="40" value="760">
+      <span id="sizeval">760</span>px</label></p>
+    <p class="size"><label>缩略图
+      <input id="thumbsize" type="range" min="160" max="320" step="20" value="320">
+      <span id="thumbsizeval">320</span>px</label></p>
+    <p class="hint">颜色只在换群时变；同一批人跨帧不换色（§30）。</p>
+  </aside>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
