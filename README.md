@@ -53,7 +53,7 @@ python -m wy run --n 128 --ticks 4000 --seed 7
 **装法二：装成一个命令**（需要 pip；装完在任何目录都能跑）
 
 ```powershell
-pip install dist\wangyun-4.2.0-py3-none-any.whl   # 仓库里直接带着轮子
+pip install dist\wangyun-4.3.0-py3-none-any.whl   # 仓库里直接带着轮子
 pip install -e "D:\望云"                            # 或者从源码装
 wangyun run --n 128 --ticks 4000 --seed 7
 ```
@@ -72,7 +72,7 @@ python -m wy strip --n 128 --ticks 8000               # 诊断带（事件与曲
 python -m wy evo   --n 128 --ticks 4000 --seed 7      # 带子：只在划分变了的时候采一帧
 python -m wy law   --ticks 1500                       # 扫 kick，看稳定位数的上限
 python -m wy serve                                    # 本地网页端（默认 127.0.0.1:8765）
-python tests\run_tests.py                             # 契约测试（96 条）
+python tests\run_tests.py                             # 契约测试（98 条）
 ```
 
 产物默认落在**当前目录**下的 `out/`；要换地方设环境变量 `WY_OUT`：
@@ -102,7 +102,11 @@ $env:WY_OUT = "D:\某处\结果"; python -m wy run --n 64 --ticks 300
 - **插件** 三个扩展点：`renderer`（画法）、`reading`（读数）、`datasource`（输入）；
   重名会被拒，装成包后按 entry point 发现。自带例子：SVG 渲染、hue-moved 读数、边表数据源。
 - **接进 DSH** `dsh-plugin/`：两个工具——`wy_observe` 看总览、`wy_frame` 追问某一帧，都跑 `python -m wy.core`；
-  装法 `plugin_manager install_bundle target=D:\望云\dsh-plugin`，细节在 `ARCHITECTURE.md` 第 7 节。
+  装法 `plugin_manager install_bundle target=D:\望云\dsh-plugin`，细节在 `ARCHITECTURE.md` 第 8 节。
+- **桌面版** 跑一次 `powershell -ExecutionPolicy Bypass -File tools\install_desktop.ps1`，
+  桌面和开始菜单就多一个 `WangYun` 图标。以后双击图标：起本地服务，用 Edge 的 `--app` 窗口
+  打开（像独立软件；没有 Edge 就退回默认浏览器）；页面侧栏底部「退出望云」把服务停掉。
+  再点一次图标不会起第二份——它认得出已经在跑。没有控制台，日志在 `%LOCALAPPDATA%\wangyun\desktop.log`。
 
 接法、目录树和「只装 numpy 怎么用」都在 `ARCHITECTURE.md`。
 
@@ -637,13 +641,16 @@ wy/board.py      一屏看全（五层读数一张图）。
 wy/strip.py      诊断带（事件与读数同一条时间轴，五层曲线 + 色相小点）。
 wy/cli.py        run / law / evo / board / strip / read / paint / scene / anim / drill / zoom / scan / portrait / serve。
 wy/server.py     本地网页端（stdlib http.server，零新依赖）。
+wy/desktop.py    桌面入口：双击图标 → 起服务 → Edge app 窗口；/api/quit 停服务。
 wy/plugins.py    扩展点：datasource / reading / renderer；自带例子在 plugins_builtin.py。
 wy/web/          页面（index.html / app.js / style.css；原生 canvas，不加载外部资源）。
 dsh-plugin/      DSH 插件（@local/wangyun-tools）：wy_observe / wy_frame 调 python -m wy.core。
+assets/          桌面图标 wangyun.ico（tools/make_icon.py 生成）。
 images/          README 里的展示图（程序自己画的）。
-dist/            发布件：wangyun-4.2.0-py3-none-any.whl / .tar.gz（`python -m build` 重出）。
-tests/           契约测试，96 条，无 pytest。
+dist/            发布件：wangyun-4.3.0-py3-none-any.whl / .tar.gz（`python -m build` 重出）。
+tests/           契约测试，98 条，无 pytest。
 tools/           调参、诊断、自检（check_layout.py / check_color.py / check_docs.py / check_plugin.py / check_package.py）、
+                 桌面（make_icon.py 画图标 / install_desktop.ps1 建快捷方式）、
                  探针（probe_*.py，当开发记录留）、
                  真图（asar_deps.py / readable.py / rel_read.py / make_graph.py / score_groups.py /
                  blockify.py / scope_compare.py）、分阶段计时、双向对照、两种形、阶梯、负荷、寿命

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wangyun"
-version = "4.2.0"
+version = "4.3.0"
 description = "望云：看形从关系里长出来的观测器（瓶颈读数器）"
 readme = "README.md"
 license = "MIT"

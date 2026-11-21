@@ -429,5 +429,16 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+$("quit").addEventListener("click", async () => {
+  if (!confirm("退出望云？本地服务会停掉，这页可以关掉。")) return;
+  stop();
+  try {
+    await fetch("/api/quit", { method: "POST" });
+    $("byebye").textContent = "已退出，关掉这页就行。";
+  } catch (err) {
+    $("byebye").textContent = "没送到：服务可能已经停了。";
+  }
+});
+
 loadPlugins();
 run();

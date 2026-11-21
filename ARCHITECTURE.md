@@ -144,11 +144,32 @@ wangyun serve --open           # 网页端
 `web/` 里每个文件在不在 package-data 里、命令行入口能不能 import、版本号两处一不一致。
 真装一遍的验法（本机做过的）：`python -m venv --system-site-packages out\_venv`，
 `out\_venv\Scripts\python -m pip wheel . --no-deps -w out\_wheel` 出 wheel，
-`pip install --no-deps --target out\_site out\_wheel\wangyun-4.2.0-py3-none-any.whl`，
+`pip install --no-deps --target out\_site out\_wheel\wangyun-4.3.0-py3-none-any.whl`，
 然后从仓库外的目录 `wangyun --help`、`importlib.resources.files("wy").joinpath("web/app.js")`
 都通。本机 site-packages 写入探测被文件锁挡过一次（WinError 32），`--target` 绕开即可。
 
-## 7. 接进 DSH（`dsh-plugin/`）
+## 7. 桌面入口（双击就能用）
+
+`tools/install_desktop.ps1` 跑一次，桌面和开始菜单就有 `WangYun` 图标。它做的事：
+
+1. 在仓库里建 `.venv`（不碰系统 Python），`pip install -e .`；
+2. 用 `tools/make_icon.py` 生成 `assets/wangyun.ico`（Pillow 画的五个色相点）；
+3. 用 WScript.Shell 建快捷方式，目标是 `.venv\Scripts\pythonw.exe -m wy.desktop`。
+
+双击以后（`wy/desktop.py`）：
+
+- 先看 `%LOCALAPPDATA%\wangyun\state.json` 和默认端口上有没有活着的 `/api/health`；
+  有就只开窗口，不重复起服务（再点一次图标 = 把窗口叫回来）。
+- 没有就挑一个空端口起 `server.make_server`，写 state，0.5 秒后开窗口：
+  优先 `msedge --app=URL --window-size=1360,940`（像独立软件），没有 Edge 就 `webbrowser.open`。
+- 页面侧栏底部「退出望云」→ 本机 `POST /api/quit` → 服务自己 `shutdown`、state 清掉；
+  `do_POST` 只认 127.0.0.1 / ::1，别的地址 403。
+
+没有控制台，所以日志在 `%LOCALAPPDATA%\wangyun\desktop.log`（超过 1 MB 重来）。
+契约：`test_server_quit_endpoint_stops_the_desktop_app`（退出真的停）、
+`test_desktop_port_helpers_are_honest`（端口先探再占、服务没起时 `alive` 不说谎）。
+
+## 8. 接进 DSH（`dsh-plugin/`）
 
 望云的整个软件，可以直接挂在 DeepSeek Harness 里当一个工具：
 
@@ -166,10 +187,10 @@ wangyun serve --open           # 网页端
   齐不齐、locale/图标/patch id、`node --check` 过得去。它跟别的 `tools/check_*.py`
   一起被 `test_tool_self_checks_pass` 调到。
 
-## 8. 测试
+## 9. 测试
 
 ```bash
-python tests/run_tests.py      # 96 条，自写 runner，无 pytest
+python tests/run_tests.py      # 98 条，自写 runner，无 pytest
 ```
 
 跟这一层结构直接相关的几条：
@@ -182,6 +203,8 @@ python tests/run_tests.py      # 96 条，自写 runner，无 pytest
 - `test_plugins_expose_three_kinds_and_render_svg`：三个扩展点都在，重名会被拒。
 - `test_server_answers_health_and_bundle`：网页端的接口真的能返回数据。
 - `test_server_png_is_a_pillow_render`：网页端「原图」发的是真 PNG，帧号越界会夹住。
+- `test_server_quit_endpoint_stops_the_desktop_app`：`POST /api/quit` 之后服务真的停。
+- `test_desktop_port_helpers_are_honest`：桌面入口的找端口/探活不撒谎。
 - `tools/check_docs.py`：文档里引用的契约名、条数、§号必须和代码对得上。
 - `tools/check_plugin.py`：插件包的清单、说明、图标、接线、语法。
 - `tools/check_package.py`：打包清单、package-data 罩不罩得住 `web/`、入口与版本号。

@@ -5,7 +5,7 @@
 ```powershell
 $py = "C:\Users\CS TAO\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe"
 $env:PYTHONIOENCODING = "utf-8"; $env:PYTHONPATH = "D:\望云"; Set-Location "D:\望云"
-& $py tests\run_tests.py          # 96/96
+& $py tests\run_tests.py          # 98/98
 & $py -m wy --help                # 十四条命令
 ```
 
@@ -17,12 +17,14 @@ $env:PYTHONIOENCODING = "utf-8"; $env:PYTHONPATH = "D:\望云"; Set-Location "D:
 
 ## 现在的状态
 
-- 测试 **96/96**（`tests/run_tests.py`，自写 runner，无 pytest；`test_*` 自动发现）
+- 测试 **98/98**（`tests/run_tests.py`，自写 runner，无 pytest；`test_*` 自动发现）
 - 文档：`DESIGN.md`（实验日志，§0–§31）、`ARCHITECTURE.md`（分层与接法）、`GUIDE.md`（八节判据表）、`README.md`（上手）
 - 命令：`run / law / evo / board / strip / read / paint / scene / anim / drill / zoom / scan / portrait / serve`
 - 环境：numpy + Pillow；**核心只依赖 numpy**（Pillow 只服务出图层）；没有 matplotlib、没有 pytest；不要用 PowerShell 改文本文件（会变 mojibake，只能用 write/edit）
 - 自检：`tools/check_*.py`，`test_tool_self_checks_pass` 会跑：形/色红线 + `check_docs.py`（文档里引用的契约名、自称测试条数、§N 必须真的存在）+ `check_plugin.py`（插件清单/说明/图标/接线/`node --check`）+ `check_package.py`（构建后端、包列全没列全、package-data 罩不罩得住 `web/`、入口能 import、版本号两处一致）
-- 分层（v4.0）：`wy.core` 纯演算 + `bundle.py`（`observe()` → JSON，交付面）；出图仍 Pillow；网页端 `wy/server.py` + `wy/web/`；插件 `wy/plugins.py` + `plugins_builtin.py`；接 DSH 的包在 `dsh-plugin/`（已 `install_bundle`，工具 `wy_observe`）
+- 分层（v4.0）：`wy.core` 纯演算 + `bundle.py`（`observe()` → JSON，交付面）；出图仍 Pillow；网页端 `wy/server.py` + `wy/web/`；插件 `wy/plugins.py` + `plugins_builtin.py`；接 DSH 的包在 `dsh-plugin/`（已 `install_bundle`，工具 `wy_observe` / `wy_frame`）
+- 桌面（v4.9）：`tools/install_desktop.ps1` 建项目内 `.venv` + 桌面/开始菜单快捷方式；双击 → `pythonw -m wy.desktop` 起服务、开 Edge `--app` 窗口；页面侧栏「退出望云」POST 本机 `/api/quit` 停服务。日志 `%LOCALAPPDATA%\wangyun\desktop.log`
+- 发布：GitHub `strolloll/wangyun`（public，MIT），main 已推送；v4.3.0（桌面版）本机已构建、待提交/推 tag，Release 需要在网页上建或给一个临时 token
 
 ## 钉住的结论（别重做）
 
@@ -33,7 +35,8 @@ $env:PYTHONIOENCODING = "utf-8"; $env:PYTHONPATH = "D:\望云"; Set-Location "D:
 - 位数天花板由 kick 定（§13）、量尺会伪装成天花板（§13.1）
 - 真图读取要先 `scan` 挑 tick，可读性看 `contrast / q_excess`（§24/§25）
 - 分层规矩（§31）：核心不碰 Pillow/CLI/文件（`test_core_imports_without_pillow`）；bundle 能落 JSON 且跨进程保色（`test_bundle_is_json_and_keeps_hues_by_membership`）；核心命令行 stdout 就是一份 bundle（`test_core_command_line_emits_json_bundle`）；插件三通道重名拒绝（`test_plugins_expose_three_kinds_and_render_svg`）；网页端接口真的给数据（`test_server_answers_health_and_bundle`）；网页端「原图」发的是真 PNG 且帧号越界会夹住（`test_server_png_is_a_pillow_render`）
-- 接进 DSH 只走一条路：`dsh-plugin/` 的 `wy_observe` 调 `python -m wy.core`，不复制算法、不画图（`tools/check_plugin.py` 钉清单和接线）
+- 接进 DSH 只走一条路：`dsh-plugin/` 的 `wy_observe` / `wy_frame` 调 `python -m wy.core`，不复制算法、不画图（`tools/check_plugin.py` 钉清单和接线）
+- 桌面版没有新算法：`wy/desktop.py` 只管端口/窗口/日志；停服务靠本机 `POST /api/quit`（`test_server_quit_endpoint_stops_the_desktop_app`、`test_desktop_port_helpers_are_honest`）
 
 ## 上一件（已完成，别重做）
 
@@ -108,11 +111,21 @@ v4.8 读数带悬停：
 - 契约：服务测试再断言 `/app.js` 里有 `mousemove`（条数仍 96）
 - 手工验过：`node --check wy/web/app.js` 通过；结构上页面/脚本/数据都已在服务里取到（无头环境看不到鼠标悬停的像素，逻辑靠单测与勾稽）
 
+v4.9 桌面版：
+
+- `wy/desktop.py`：双击入口。先探 `state.json` 与端口上的 `/api/health`，有人在跑就只开窗口；否则 `find_port` 挑空端口、`make_server` 起服务、0.5 s 后开 Edge `--app` 窗口（没有 Edge 退回默认浏览器）；一切写 `%LOCALAPPDATA%\wangyun\desktop.log`
+- `wy/server.py` 加 `do_POST`：只认 127.0.0.1/::1 的 `/api/quit`，回 `{"ok":true,"bye":true}` 后 `shutdown()`；顺手提出 `make_server()` 给桌面入口复用
+- `tools/install_desktop.ps1`：项目内 `.venv` + `pip install -e .` + `tools/make_icon.py` 生成 `assets/wangyun.ico` + 桌面/开始菜单快捷方式（目标 `.venv\Scripts\pythonw.exe -m wy.desktop`）
+- 页面：侧栏底部「退出望云」（confirm → POST `/api/quit`，回「已退出，关掉这页就行。」）
+- 端到端验过：`pythonw -m wy.desktop --no-open` 起 8790 → `/api/health` 200 → POST quit → 进程退出、端口关、state 清空；再双击图标默认 8765，Edge 窗口真的起来（msedge 进程 +2）
+- 契约新增两条（98）：`test_server_quit_endpoint_stops_the_desktop_app`、`test_desktop_port_helpers_are_honest`
+- 坑：Windows Store 的 `python.exe` 是占位符，`python -m venv` 不生效 → 安装脚本跳过 `\WindowsApps\` 路径，退回本机 runtime python（或 `WY_PYTHON`）
+
 ## 下一件事（候选，等用户挑）
 
-1. 探针保留（用户定的，当开发记录）：`tools/probe_anim_hue.py`、`tools/probe_hue_peak.py`
-2. 界面小活：缩略图尺寸也接滑杆（现在写死 320）、`wy_frame` 可选展开成员名单
-3. 要保持的边界：`_as_groups()` 的 `stable=0.0` 是占位；evo 的配色是刻意的另一种读法
+1. v4.3.0（桌面版）已提交/推了源码与 tag；Release 页还需要在 GitHub 网页上建（或给临时 token），dist 里的 wheel/sdist 可以直接拖上去
+2. 桌面版小活：安装脚本可选「开机自启」、右键菜单「打开数据目录」、窗口关闭时自动退服务（现在是「关窗不退，侧栏退出才退」）
+3. 要保持的边界：`_as_groups()` 的 `stable=0.0` 是占位；evo 的配色是刻意的另一种读法；探针 `probe_*.py` 保留（用户定的）
 
 ## 别踩的坑
 
@@ -122,3 +135,6 @@ v4.8 读数带悬停：
 - `wy.core` 导出的 `scan` 是函数，shim 转发要用 `importlib.import_module("wy.core.scan")`
 - `_as_groups()` 造的 `Group` 里 `stable=0.0` 是占位，不是读数
 - `evo` 的颜色是刻意读法（§28.4），别顺手「统一配色」
+- Windows Store 的 `python.exe` 是占位符：`python -m venv` 会静默不建 `.venv`；装桌面版用 runtime python 或设 `WY_PYTHON`
+- git+ssh 在这台机：`HOME=$env:USERPROFILE` 让 MinGit 自带的 ssh 读 `~/.ssh/config`；直接传 `GIT_SSH_COMMAND` 会被 Windows 路径反斜杠坑
+- 文档测试条数：加契约后要同时改 README 两处 + HANDOFF 两处（`check_docs.py` 会红）

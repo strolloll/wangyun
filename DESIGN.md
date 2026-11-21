@@ -1872,3 +1872,20 @@ health / bundle / 首页，接口给不出数据就红。
   的版本号是否一致。它和 `check_docs.py` / `check_plugin.py` 一样被
   `test_tool_self_checks_pass` 调到——装包出问题要在装之前红，不是装完才发现。
 
+### 31.8 桌面入口：双击就能用（v4.9）
+
+产品化的最后一截是「不用开终端」。做法故意薄：
+
+- `tools/install_desktop.ps1` 建项目内 `.venv`、`pip install -e .`、生成图标、写快捷方式
+  （目标是 `.venv\Scripts\pythonw.exe -m wy.desktop`）。快捷方式是标准 `.lnk`，不注册服务、
+  不写开机自启——用户双击才起，关掉窗口后服务还活着，侧栏「退出望云」才停。
+- `wy/desktop.py` 只做三件事：认领端口（先探 `/api/health`，有人在跑就只开窗口）、
+  起 `make_server`（默认 127.0.0.1:8765，被占就往后找 20 个）、开 Edge 的 `--app` 窗口；
+  没有控制台，所以一切写进 `%LOCALAPPDATA%\wangyun\desktop.log`，状态写 `state.json`。
+- 停服务是页面自己的事：`do_POST` 只认本机 `/api/quit`，回 `{"bye": true}` 后
+  `shutdown()`；外面来的 403。这样「退出」不需要另开一个控制进程。
+- 契约两条：`test_server_quit_endpoint_stops_the_desktop_app`、`test_desktop_port_helpers_are_honest`。
+  都只验「说的和做的一致」——退出真的停、端口先探再占；不验窗口像素。
+
+一句话：桌面版没有新算法，也没有新依赖，它只是把 `wy serve` 包成一个能双击的东西。
+

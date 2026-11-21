@@ -1196,6 +1196,50 @@ def test_server_png_is_a_pillow_render() -> None:
         httpd.server_close()
 
 
+def test_server_quit_endpoint_stops_the_desktop_app() -> None:
+    """桌面版「退出望云」：本机 POST /api/quit，服务真的停下来。"""
+    import http.client
+    import json
+    import threading
+
+    from wy.server import make_server
+
+    httpd = make_server("127.0.0.1", 0)
+    port = httpd.server_address[1]
+    thread = threading.Thread(target=httpd.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True)
+    thread.start()
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+        conn.request("POST", "/api/quit")
+        res = conn.getresponse()
+        body = json.loads(res.read())
+        assert res.status == 200 and body.get("bye") is True, "退出接口没回 bye"
+        thread.join(5)
+        assert not thread.is_alive(), "退出后服务还在转"
+        conn.close()
+    finally:
+        httpd.server_close()
+
+
+def test_desktop_port_helpers_are_honest() -> None:
+    """桌面入口：端口先探再占；服务没起时 alive 不说谎。"""
+    import socket
+
+    from wy.desktop import alive, find_port, port_free
+
+    port = find_port("127.0.0.1", 8765, tries=40)
+    assert port_free("127.0.0.1", port)
+    assert not alive(port), "没起服务却说活着"
+    blocker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        blocker.bind(("127.0.0.1", port))
+        blocker.listen(1)
+        assert not port_free("127.0.0.1", port), "被占用还说空着"
+        assert find_port("127.0.0.1", port, tries=5) != port, "占了还选同一个端口"
+    finally:
+        blocker.close()
+
+
 def test_board_puts_all_five_layers_on_one_image() -> None:
     """一屏看全：五层读数（形/寿命/负荷/k(t)/违约/位数活性）都能画出来，不缺块。"""
     from wy.board import board as make_board

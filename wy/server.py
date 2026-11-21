@@ -202,9 +202,26 @@ class Handler(BaseHTTPRequestHandler):
             self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": repr(exc)})
 
 
+    def do_POST(self) -> None:  # noqa: N802
+        url = urlparse(self.path)
+        if url.path == "/api/quit":
+            if self.client_address[0] not in ("127.0.0.1", "::1"):
+                self._json(HTTPStatus.FORBIDDEN, {"error": "只接受本机请求"})
+                return
+            self._json(HTTPStatus.OK, {"ok": True, "bye": True})
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+            return
+        self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+
+
+def make_server(host: str = "127.0.0.1", port: int = 8765) -> ThreadingHTTPServer:
+    """建一个监听中的服务（`desktop.py` 也用它，好自己管生命周期）。"""
+    return ThreadingHTTPServer((host, port), Handler)
+
+
 def serve(host: str = "127.0.0.1", port: int = 8765, open_browser: bool = False) -> None:
     """起服务。默认只听本机；`open_browser` 为真时顺手开一下页面。"""
-    httpd = ThreadingHTTPServer((host, port), Handler)
+    httpd = make_server(host, port)
     url = f"http://{host}:{httpd.server_address[1]}/"
     print(f"望云观察台：{url}")
     if open_browser:
